@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using HealthAssessment.DTOs;
@@ -49,5 +50,46 @@ namespace HealthAssessment.Services
             else
                 throw new Exception("نام کاربری وارد شده نادرست است.");
         }
+        public List<FormQuestion> GetForm (GetForm getForm)
+        {
+            var form = _context.UserForms.Where(x => x.FormId == getForm.FormId && x.UserId == getForm.UserId);
+            if (form.FirstOrDefault().Check)
+            {
+                throw new Exception("این فرم قبلا تکمیل شده است.");
+            }
+            return _context.FormQuestions.Where(x => x.FormId == getForm.FormId).ToList();
+        }
+        public List<UserFormResult> GetResult (GetForm getForm)
+        {
+            var form = _context.UserForms.Where(x => x.FormId == getForm.FormId && x.UserId == getForm.UserId);
+            if (!form.FirstOrDefault().Check)
+            {
+                throw new Exception("این فرم هنوز تکمیل نشده است.");
+            }
+            return _context.UserFormResults.Where(x => x.FormId == getForm.FormId && x.UserId == getForm.UserId).ToList();
+        }
+        public async Task<bool> SaveResult(SaveResult saveResult)
+        {
+            var form = _context.UserForms.Where(x => x.FormId == saveResult.FormId && x.UserId == saveResult.UserId);
+            if (form.FirstOrDefault().Check)
+            {
+                throw new Exception("این فرم قبلا تکمیل شده است.");
+            }
+            foreach(var x in saveResult.QuestionResults)
+            {
+                var userFormResult = new UserFormResult
+                {
+                    UserId = saveResult.UserId,
+                    FormId = saveResult.FormId,
+                    QuestionId = x.QuestionId,
+                    Result = x.Result
+                };
+                _context.UserFormResults.Add(userFormResult);
+                await _context.SaveChangesAsync();
+            }
+            return true;
+        }
+
+
     }
 }

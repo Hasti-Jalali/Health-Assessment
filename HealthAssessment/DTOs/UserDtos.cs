@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using HealthAssessment.Models;
+
 namespace HealthAssessment.DTOs
 {
     public class UserDtos
@@ -16,5 +19,23 @@ namespace HealthAssessment.DTOs
     {
         public string Username { get; set; }
         public string Password { get; set; }
+    }
+
+    public class GetForm
+    {
+        public int UserId { get; set; }
+        public int FormId { get; set; }
+    }
+    public class QuestionResult
+    {
+        public int QuestionId { get; set; }
+        public int Result { get; set; }
+
+    }
+    public class SaveResult
+    {
+        public int UserId { get; set; }
+        public int FormId { get; set; }
+        public List<QuestionResult> QuestionResults { get; set; }
     }
 }

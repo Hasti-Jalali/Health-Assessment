@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using HealthAssessment.DTOs;
 using HealthAssessment.Models;
@@ -29,5 +30,25 @@ namespace HealthAssessment.Controllers
         {
             return _userService.LoginUser(user);
         }
+
+        [HttpPost("GetForm")]
+        public List<FormQuestion> GetForm(GetForm form)
+        {
+            return _userService.GetForm(form);
+        }
+
+        [HttpPost("GetResult")]
+        public List<UserFormResult> GetResult(GetForm form)
+        {
+            return _userService.GetResult(form);
+        }
+
+        [HttpPost("SaveResult")]
+        public async Task<bool> SaveResult(SaveResult saveResult)
+        {
+            return await _userService.SaveResult(saveResult);
+        }
+
+
     }
 }

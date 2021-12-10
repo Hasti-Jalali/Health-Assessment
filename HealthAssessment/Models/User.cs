@@ -14,5 +14,7 @@ namespace HealthAssessment.Models
         public string PasswordHash { get; set; }
         public string Email { get; set; }
 
+        public virtual List<UserForm> UserForms { get; set; }
+        public virtual List<UserFormResult> UserFormResult { get; set; }
     }
 }

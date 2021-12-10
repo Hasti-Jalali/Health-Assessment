@@ -3,21 +3,38 @@ using System;
 using HealthAssessment.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace HealthAssessment.Migrations
 {
     [DbContext(typeof(DBContext))]
-    partial class DBContextModelSnapshot : ModelSnapshot
+    [Migration("20211209192659_addFormAndQuestionsTable")]
+    partial class addFormAndQuestionsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Relational:MaxIdentifierLength", 63)
                 .HasAnnotation("ProductVersion", "5.0.11")
                 .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+            modelBuilder.Entity("FormQuestionQuestion", b =>
+                {
+                    b.Property<int>("FormQuestionsFormId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("QuestionsId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("FormQuestionsFormId", "QuestionsId");
+
+                    b.HasIndex("QuestionsId");
+
+                    b.ToTable("FormQuestionQuestion");
+                });
 
             modelBuilder.Entity("HealthAssessment.Models.Form", b =>
                 {
@@ -35,24 +52,34 @@ namespace HealthAssessment.Migrations
                     b.Property<string>("Title")
                         .HasColumnType("text");
 
+                    b.Property<int?>("UserFormId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
-                    b.ToTable("Forms");
+                    b.HasIndex("UserFormId");
+
+                    b.ToTable("Form");
                 });
 
             modelBuilder.Entity("HealthAssessment.Models.FormQuestion", b =>
                 {
+                    b.Property<int>("FormId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<int?>("FormId1")
+                        .HasColumnType("integer");
+
                     b.Property<int>("QuestionId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("FormId")
-                        .HasColumnType("integer");
+                    b.HasKey("FormId");
 
-                    b.HasKey("QuestionId", "FormId");
+                    b.HasIndex("FormId1");
 
-                    b.HasIndex("FormId");
-
-                    b.ToTable("FormQuestions");
+                    b.ToTable("FormQuestion");
                 });
 
             modelBuilder.Entity("HealthAssessment.Models.Question", b =>
@@ -102,24 +129,6 @@ namespace HealthAssessment.Migrations
 
             modelBuilder.Entity("HealthAssessment.Models.UserForm", b =>
                 {
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("FormId")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("Check")
-                        .HasColumnType("boolean");
-
-                    b.HasKey("UserId", "FormId");
-
-                    b.HasIndex("FormId");
-
-                    b.ToTable("UserForms");
-                });
-
-            modelBuilder.Entity("HealthAssessment.Models.UserFormResult", b =>
-                {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
@@ -128,112 +137,83 @@ namespace HealthAssessment.Migrations
                     b.Property<int>("FormId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("QuestionId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Result")
-                        .HasColumnType("integer");
-
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("FormId");
+                    b.ToTable("UserForm");
+                });
 
-                    b.HasIndex("QuestionId");
+            modelBuilder.Entity("UserUserForm", b =>
+                {
+                    b.Property<int>("UserFormsId")
+                        .HasColumnType("integer");
 
-                    b.HasIndex("UserId");
+                    b.Property<int>("UsersId")
+                        .HasColumnType("integer");
 
-                    b.ToTable("UserFormResults");
+                    b.HasKey("UserFormsId", "UsersId");
+
+                    b.HasIndex("UsersId");
+
+                    b.ToTable("UserUserForm");
+                });
+
+            modelBuilder.Entity("FormQuestionQuestion", b =>
+                {
+                    b.HasOne("HealthAssessment.Models.FormQuestion", null)
+                        .WithMany()
+                        .HasForeignKey("FormQuestionsFormId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HealthAssessment.Models.Question", null)
+                        .WithMany()
+                        .HasForeignKey("QuestionsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("HealthAssessment.Models.Form", b =>
+                {
+                    b.HasOne("HealthAssessment.Models.UserForm", null)
+                        .WithMany("Forms")
+                        .HasForeignKey("UserFormId");
                 });
 
             modelBuilder.Entity("HealthAssessment.Models.FormQuestion", b =>
                 {
                     b.HasOne("HealthAssessment.Models.Form", "Form")
                         .WithMany("FormQuestions")
-                        .HasForeignKey("FormId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("HealthAssessment.Models.Question", "Question")
-                        .WithMany("FormQuestions")
-                        .HasForeignKey("QuestionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("FormId1");
 
                     b.Navigation("Form");
-
-                    b.Navigation("Question");
                 });
 
-            modelBuilder.Entity("HealthAssessment.Models.UserForm", b =>
+            modelBuilder.Entity("UserUserForm", b =>
                 {
-                    b.HasOne("HealthAssessment.Models.Form", "Forms")
-                        .WithMany("UserForms")
-                        .HasForeignKey("FormId")
+                    b.HasOne("HealthAssessment.Models.UserForm", null)
+                        .WithMany()
+                        .HasForeignKey("UserFormsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("HealthAssessment.Models.User", "User")
-                        .WithMany("UserForms")
-                        .HasForeignKey("UserId")
+                    b.HasOne("HealthAssessment.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("UsersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Forms");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("HealthAssessment.Models.UserFormResult", b =>
-                {
-                    b.HasOne("HealthAssessment.Models.Form", "Form")
-                        .WithMany("UserFormResult")
-                        .HasForeignKey("FormId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("HealthAssessment.Models.Question", "Question")
-                        .WithMany("UserFormResult")
-                        .HasForeignKey("QuestionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("HealthAssessment.Models.User", "User")
-                        .WithMany("UserFormResult")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Form");
-
-                    b.Navigation("Question");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("HealthAssessment.Models.Form", b =>
                 {
                     b.Navigation("FormQuestions");
-
-                    b.Navigation("UserFormResult");
-
-                    b.Navigation("UserForms");
                 });
 
-            modelBuilder.Entity("HealthAssessment.Models.Question", b =>
+            modelBuilder.Entity("HealthAssessment.Models.UserForm", b =>
                 {
-                    b.Navigation("FormQuestions");
-
-                    b.Navigation("UserFormResult");
-                });
-
-            modelBuilder.Entity("HealthAssessment.Models.User", b =>
-                {
-                    b.Navigation("UserFormResult");
-
-                    b.Navigation("UserForms");
+                    b.Navigation("Forms");
                 });
 #pragma warning restore 612, 618
         }
