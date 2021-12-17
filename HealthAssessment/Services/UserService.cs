@@ -28,7 +28,7 @@ namespace HealthAssessment.Services
                 Email = user.Email,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                PasswordHash = BCryptNet.HashPassword(user.Password)
+                PasswordHash = user.Password
 
             };
 
@@ -37,54 +37,89 @@ namespace HealthAssessment.Services
 
             return user;
         }
-        public bool LoginUser(Login user)
+        public LoginResponse LoginUser(Login user)
         {
             var _user = _context.Users.Where(x => x.Username == user.Username);
-            if (_user != null)
+            if (_user.Count() > 0)
             {
-                if (_user.FirstOrDefault().PasswordHash == BCryptNet.HashPassword(user.Password))
-                    return true;
+                if (_user.FirstOrDefault().PasswordHash == user.Password)
+                    return new LoginResponse {
+                        Role = _user.FirstOrDefault().Role,
+                        UserId = _user.FirstOrDefault().Id,
+                        Status = true
+                    };
                 else
                     throw new Exception("رمز وارد شده اشتباه است.");
             }
             else
                 throw new Exception("نام کاربری وارد شده نادرست است.");
         }
-        public List<FormQuestion> GetForm (GetForm getForm)
+        public GetFormResponse GetForm (GetForm getForm)
         {
             var form = _context.UserForms.Where(x => x.FormId == getForm.FormId && x.UserId == getForm.UserId);
-            if (form.FirstOrDefault().Check)
+            if (form != null && form.FirstOrDefault().Check)
             {
                 throw new Exception("این فرم قبلا تکمیل شده است.");
             }
-            return _context.FormQuestions.Where(x => x.FormId == getForm.FormId).ToList();
+            var questions = _context.FormQuestions.Where(x => x.FormId == getForm.FormId).ToList();
+            questions.Sort((x, y) => x.QuestionId.CompareTo(y.QuestionId));
+            var Qlist = new List<string>();
+            foreach(var q in questions)
+            {
+                Qlist.Add(q.Question.Text);
+            }
+
+            var result = new GetFormResponse
+            {
+                Questions = Qlist
+            };
+            return result;
         }
-        public List<UserFormResult> GetResult (GetForm getForm)
+        public List<GetResultResponse> GetResult (GetForm getForm)
         {
             var form = _context.UserForms.Where(x => x.FormId == getForm.FormId && x.UserId == getForm.UserId);
-            if (!form.FirstOrDefault().Check)
+            if (form!= null && !form.FirstOrDefault().Check)
             {
                 throw new Exception("این فرم هنوز تکمیل نشده است.");
             }
-            return _context.UserFormResults.Where(x => x.FormId == getForm.FormId && x.UserId == getForm.UserId).ToList();
+            var result = new List<GetResultResponse>();
+            var ufrs = _context.UserFormResults.Where(x => x.FormId == getForm.FormId && x.UserId == getForm.UserId).ToList();
+            ufrs.Sort((x, y) => x.QuestionId.CompareTo(y.QuestionId));
+            foreach(var ufr in ufrs)
+            {
+                result.Add(new GetResultResponse
+                {
+                    Question = ufr.Question.Text,
+                    Answer = ufr.Result
+                });
+            }
+            return result;
         }
         public async Task<bool> SaveResult(SaveResult saveResult)
         {
-            var form = _context.UserForms.Where(x => x.FormId == saveResult.FormId && x.UserId == saveResult.UserId);
-            if (form.FirstOrDefault().Check)
+            var form = _context.UserForms.Where(x => x.FormId == saveResult.FormId && x.UserId == saveResult.UserId).FirstOrDefault();
+            
+            if (form.Check)
             {
                 throw new Exception("این فرم قبلا تکمیل شده است.");
             }
-            foreach(var x in saveResult.QuestionResults)
+            form.Check = true;
+            await _context.SaveChangesAsync();
+            var questions = _context.FormQuestions.Where(x => x.FormId == saveResult.FormId)
+                .Select(x=> x.QuestionId).ToList();
+            questions.Sort();
+            var i = 0;
+            foreach (var q in questions)
             {
-                var userFormResult = new UserFormResult
+                var ufr = new UserFormResult
                 {
-                    UserId = saveResult.UserId,
                     FormId = saveResult.FormId,
-                    QuestionId = x.QuestionId,
-                    Result = x.Result
+                    UserId = saveResult.UserId,
+                    QuestionId = q,
+                    Result = saveResult.QuestionResults[i]
                 };
-                _context.UserFormResults.Add(userFormResult);
+                i++;
+                _context.UserFormResults.Add(ufr);
                 await _context.SaveChangesAsync();
             }
             return true;

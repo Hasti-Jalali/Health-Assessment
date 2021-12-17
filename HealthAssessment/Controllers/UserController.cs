@@ -26,19 +26,19 @@ namespace HealthAssessment.Controllers
         }
 
         [HttpPost("LoginUser")]
-        public bool LoginUser(Login user)
+        public LoginResponse LoginUser(Login user)
         {
             return _userService.LoginUser(user);
         }
 
         [HttpPost("GetForm")]
-        public List<FormQuestion> GetForm(GetForm form)
+        public GetFormResponse GetForm(GetForm form)
         {
             return _userService.GetForm(form);
         }
 
         [HttpPost("GetResult")]
-        public List<UserFormResult> GetResult(GetForm form)
+        public List<GetResultResponse> GetResult(GetForm form)
         {
             return _userService.GetResult(form);
         }

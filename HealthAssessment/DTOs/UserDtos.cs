@@ -21,10 +21,29 @@ namespace HealthAssessment.DTOs
         public string Password { get; set; }
     }
 
+    public class LoginResponse
+    {
+        public bool Status { get; set; }
+        public int UserId { get; set; }
+        public int Role { get; set; }
+    }
+
+
     public class GetForm
     {
         public int UserId { get; set; }
         public int FormId { get; set; }
+    }
+
+    public class GetFormResponse
+    {
+        public List<string> Questions { get; set; }
+    }
+
+    public class GetResultResponse
+    {
+        public string Question { get; set; }
+        public int Answer { get; set; }
     }
     public class QuestionResult
     {
@@ -36,6 +55,7 @@ namespace HealthAssessment.DTOs
     {
         public int UserId { get; set; }
         public int FormId { get; set; }
-        public List<QuestionResult> QuestionResults { get; set; }
+        public List<int> QuestionResults { get; set; }
     }
+
 }
