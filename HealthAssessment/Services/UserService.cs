@@ -22,6 +22,8 @@ namespace HealthAssessment.Services
         {
             if (_context.Users.Where(x => x.Username == user.Username).Count() > 0)
                 throw new Exception("این نام کاربری در سیستم وجود دارد.");
+            if(_context.Users.Where(x => x.Email == user.Email).Count() > 0)
+                throw new Exception("این ایمیل در سیستم وجود دارد.");
             var newUser = new User
             {
                 Username = user.Username,
@@ -46,7 +48,9 @@ namespace HealthAssessment.Services
                     return new LoginResponse {
                         Role = _user.FirstOrDefault().Role,
                         UserId = _user.FirstOrDefault().Id,
-                        Status = true
+                        Status = true,
+                        FName = _user.FirstOrDefault().FirstName,
+                        LName = _user.FirstOrDefault().LastName
                     };
                 else
                     throw new Exception("رمز وارد شده اشتباه است.");
@@ -125,6 +129,19 @@ namespace HealthAssessment.Services
             return true;
         }
 
-
+        public async Task<bool> ChangePassword(ChangePassword request)
+        {
+            var user = _context.Users.Where(x => x.Username == request.UserName).FirstOrDefault();
+            if(user.PasswordHash == request.OldPassword)
+            {
+                user.PasswordHash = request.NewPassword;
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                throw new Exception("پسورد ورودی با پسورد قبلی همخوانی ندارد!");
+            }
+            return true;
+        }
     }
 }

@@ -26,6 +26,8 @@ namespace HealthAssessment.DTOs
         public bool Status { get; set; }
         public int UserId { get; set; }
         public int Role { get; set; }
+        public string FName { get; set; }
+        public string LName { get; set; }
     }
 
 
@@ -56,6 +58,13 @@ namespace HealthAssessment.DTOs
         public int UserId { get; set; }
         public int FormId { get; set; }
         public List<int> QuestionResults { get; set; }
+    }
+
+    public class ChangePassword
+    {
+        public string OldPassword { get; set; }
+        public string NewPassword { get; set; }
+        public string UserName { get; set; }
     }
 
 }

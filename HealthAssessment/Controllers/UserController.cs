@@ -33,6 +33,7 @@ namespace HealthAssessment.Controllers
 
         [HttpPost("GetForm")]
         public GetFormResponse GetForm(GetForm form)
+
         {
             return _userService.GetForm(form);
         }
@@ -47,6 +48,12 @@ namespace HealthAssessment.Controllers
         public async Task<bool> SaveResult(SaveResult saveResult)
         {
             return await _userService.SaveResult(saveResult);
+        }
+
+        [HttpPost("ChangePassword")]
+        public async Task<bool> ChangePassword(ChangePassword changePassword)
+        {
+            return await _userService.ChangePassword(changePassword);
         }
 
 
